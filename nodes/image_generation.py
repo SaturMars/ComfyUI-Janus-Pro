@@ -55,6 +55,8 @@ class JanusImageGeneration:
             from janus.models import MultiModalityCausalLM
         except ImportError:
             raise ImportError("Please install Janus using 'pip install -r requirements.txt'")
+        
+        model.to(mm.get_torch_device())
 
         # 设置随机种子
         torch.manual_seed(seed)
