@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import comfy.model_management as mm
 from PIL import Image
 
 class JanusImageUnderstanding:
@@ -34,6 +35,7 @@ class JanusImageUnderstanding:
                     "min": 1,
                     "max": 2048
                 }),
+                "keep_model_loaded": ("BOOLEAN", {"default": False}),
             },
         }
     
@@ -42,7 +44,7 @@ class JanusImageUnderstanding:
     FUNCTION = "analyze_image"
     CATEGORY = "Janus-Pro"
 
-    def analyze_image(self, model, processor, image, question, seed, temperature, top_p, max_new_tokens):
+    def analyze_image(self, model, processor, image, question, seed, temperature, top_p, max_new_tokens, keep_model_loaded):
         try:
             from janus.models import MultiModalityCausalLM
         except ImportError:
@@ -106,6 +108,10 @@ class JanusImageUnderstanding:
 
         answer = processor.tokenizer.decode(outputs[0].cpu().tolist(), skip_special_tokens=True)
         
+        if not keep_model_loaded:
+            model.to(mm.unet_offload_device())
+            mm.soft_empty_cache()
+
         return (answer,)
 
     @classmethod

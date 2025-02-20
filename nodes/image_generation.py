@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import comfy.model_management as mm
 from PIL import Image
 
 class JanusImageGeneration:
@@ -40,6 +41,7 @@ class JanusImageGeneration:
                     "min": 0.0,
                     "max": 1.0
                 }),
+                "keep_model_loaded": ("BOOLEAN", {"default": False}),
             },
         }
     
@@ -48,7 +50,7 @@ class JanusImageGeneration:
     FUNCTION = "generate_images"
     CATEGORY = "Janus-Pro"
 
-    def generate_images(self, model, processor, prompt, seed, batch_size=1, temperature=1.0, cfg_weight=5.0, top_p=0.95):
+    def generate_images(self, model, processor, prompt, seed, batch_size=1, temperature=1.0, cfg_weight=5.0, top_p=0.95, keep_model_loaded=False):
         try:
             from janus.models import MultiModalityCausalLM
         except ImportError:
@@ -157,6 +159,10 @@ class JanusImageGeneration:
         # 确保格式正确
         assert images.ndim == 4 and images.shape[-1] == 3, f"Unexpected shape: {images.shape}"
         
+        if not keep_model_loaded:
+            model.to(mm.unet_offload_device())
+            mm.soft_empty_cache()
+
         return (images,)
 
     @classmethod
