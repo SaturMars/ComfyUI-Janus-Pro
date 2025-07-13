@@ -1,1 +1,2 @@
 git+https://github.com/deepseek-ai/Janus.git
+bitsandbytes>=0.45.0
